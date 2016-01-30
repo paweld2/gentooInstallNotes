@@ -130,16 +130,12 @@ nano -w /etc/fstab
 emerge --ask net-misc/dhcpcd
 
 
-echo GRUB_PLATFORMS="efi-64" >> /etc/portage/make.conf
+echo GRUB_PLATFORMS="efi-64 pc" >> /etc/portage/make.conf
 emerge --ask --newuse --deep -j9 sys-boot/grub
+
 
 grub2-install --target=x86_64-efi --efi-directory=/boot
 grub2-mkconfig -o /boot/grub/grub.cfg
-
-
-
-
-
 
 
 
@@ -149,4 +145,21 @@ umount -l /mnt/gentoo/dev{/shm,/pts,}
 umount /mnt/gentoo{/boot,/sys,/proc,}
 reboot
 
+
+
+
+### to reenter the gentoo system after systemrescue reboot:
+
+
+mount /dev/sda4 /mnt/gentoo
+mount /dev/sda2 /mnt/gentoo/boot
+cd /mnt/gentoo
+mount -t proc proc /mnt/gentoo/proc
+mount --rbind /sys /mnt/gentoo/sys
+mount --make-rslave /mnt/gentoo/sys
+mount --rbind /dev /mnt/gentoo/dev
+mount --make-rslave /mnt/gentoo/dev
+chroot /mnt/gentoo /bin/bash
+source /etc/profile
+export PS1="(chroot) $PS1"
 
