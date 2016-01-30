@@ -123,8 +123,8 @@ cp /boot/vmlinuz-* /boot/efi/boot/bootx64.efi
 
 nano -w /etc/fstab
 # content:
-/dev/sda2		/boot		ext2		noauto,noatime	0 2
-/dev/sda4		/		ext3		noatime		0 1
+/dev/sda2		/boot		vfat		noauto,noatime	0 2
+/dev/sda4		/		ext4		noatime		0 1
 /dev/sda2		none		swap		sw		0 0
 
 emerge --ask net-misc/dhcpcd
