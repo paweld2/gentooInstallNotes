@@ -1,0 +1,151 @@
+# bios changes
+
+# partitions
+parted -a optimal /dev/sda
+mklabel gpt
+unit mib
+mkpart primary 1 3
+name 1 grub
+set 1 bios_grub on
+print
+
+mkpart primary 3 131
+name 2 boot
+mkpart primary 131 16515
+name 3 swap
+mkpart primary 16515 -1
+name 4 rootfs
+set 2 boot on
+print
+quit
+
+
+
+mkfs.vfat /dev/sda2
+mkfs.ext4 /dev/sda4
+mkswap /dev/sda3
+swapon /dev/sda3
+
+
+
+mount /dev/sda4 /mnt/gentoo
+mkdir /mnt/gentoo/boot
+mount /dev/sda2 /mnt/gentoo/boot
+cd /mnt/gentoo
+
+wget http://ftp-stud.hs-esslingen.de/pub/Mirrors/gentoo/releases/amd64/autobuilds/current-stage3-amd64/stage3-amd64-20160128.tar.bz2
+wget http://ftp-stud.hs-esslingen.de/pub/Mirrors/gentoo/releases/amd64/autobuilds/current-stage3-amd64/stage3-amd64-20160128.tar.bz2.CONTENTS
+wget http://ftp-stud.hs-esslingen.de/pub/Mirrors/gentoo/releases/amd64/autobuilds/current-stage3-amd64/stage3-amd64-20160128.tar.bz2.DIGESTS
+wget http://ftp-stud.hs-esslingen.de/pub/Mirrors/gentoo/releases/amd64/autobuilds/current-stage3-amd64/stage3-amd64-20160128.tar.bz2.DIGESTS.asc
+
+openssl dgst -r -sha512 stage3-amd64-20160128.tar.bz2
+sha512sum stage3-amd64-20160128.tar.bz2
+openssl dgst -r -whirlpool stage3-amd64-20160128.tar.bz2
+
+gpg --recv-keys 0xBB572E0E2D182910
+gpg --verify stage3-amd64-20160121.tar.bz2.DIGESTS.asc
+
+tar xvjpf stage3-amd64-20160128.tar.bz2 --xattrs
+
+
+## Configuring compile options
+nano -w /mnt/gentoo/etc/portage/make.conf
+# expected state:
+CFLAGS="-march=native -O2 -pipe"
+CXXFLAGS="${CFLAGS}"
+# WARNING: Changing your CHOST is not something that should be done lightly.
+# Please consult http://www.gentoo.org/doc/en/change-chost.xml before changing.
+CHOST="x86_64-pc-linux-gnu"
+# These are the USE flags that were used in addition to what is provided by the
+# profile used for building.
+USE="mmx sse sse2 X gnuplot alsa avahi bash-completion blas cairo bzip2 crypt curl dbus djvu ffmpeg fftw git gnutls graphviz gsl gzip javascript jpeg lapack latex lcms lua mplayer pcre png posix python sqlite svg truetype vim-syntax -cups vaapi systemd -consolekit udisks opengl icu webgl libnotify fontconfig"
+MAKEOPTS="-j9"
+PORTDIR="/usr/portage"
+DISTDIR="${PORTDIR}/distfiles"
+PKGDIR="${PORTDIR}/packages"
+
+mirrorselect -i -o >> /mnt/gentoo/etc/portage/make.conf
+
+## CHROOT
+mkdir /mnt/gentoo/etc/portage/repos.conf
+cp /usr/share/portage/config/repos.conf /mnt/gentoo/etc/portage/repos.conf/gentoo.conf
+cp -L /etc/resolv.conf /mnt/gentoo/etc/
+
+mount -t proc proc /mnt/gentoo/proc
+mount --rbind /sys /mnt/gentoo/sys
+mount --make-rslave /mnt/gentoo/sys
+mount --rbind /dev /mnt/gentoo/dev
+mount --make-rslave /mnt/gentoo/dev
+chroot /mnt/gentoo /bin/bash
+source /etc/profile
+export PS1="(chroot) $PS1"
+
+# set root password
+passwd
+
+emerge-webrsync
+emerge --sync --quiet
+
+eselect profile set default/linux/amd64/13.0/systemd
+
+echo "Europe/Warsaw" > /etc/timezone
+emerge --config sys-libs/timezone-data
+
+# locale:
+nano -w /etc/locale.gen
+#content:
+#en_US.UTF-8 UTF-8
+#pl_PL.UTF-8 UTF-8
+
+
+
+locale-gen
+eselect locale set pl_PL.utf8
+
+env-update && source /etc/profile
+
+#emerge kernel:
+emerge -av =sys-kernel/gentoo-sources-4.3.4
+# YES
+etc-update
+# -5
+emerge -av =sys-kernel/gentoo-sources-4.3.4
+
+#kernel compilation
+cd /usr/src/linux
+# download prepared configuration
+wget .....
+make clean && make -j8 && make modules_install && make install
+
+mkdir -p /boot/efi/boot
+cp /boot/vmlinuz-* /boot/efi/boot/bootx64.efi
+
+nano -w /etc/fstab
+# content:
+/dev/sda2		/boot		ext2		noauto,noatime	0 2
+/dev/sda4		/		ext3		noatime		0 1
+/dev/sda2		none		swap		sw		0 0
+
+emerge --ask net-misc/dhcpcd
+
+
+echo GRUB_PLATFORMS="efi-64" >> /etc/portage/make.conf
+emerge --ask --newuse --deep -j9 sys-boot/grub
+
+grub2-install --target=x86_64-efi --efi-directory=/boot
+grub2-mkconfig -o /boot/grub/grub.cfg
+
+
+
+
+
+
+
+
+exit
+cd
+umount -l /mnt/gentoo/dev{/shm,/pts,}
+umount /mnt/gentoo{/boot,/sys,/proc,}
+reboot
+
+
