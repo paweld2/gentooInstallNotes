@@ -58,7 +58,7 @@ CXXFLAGS="${CFLAGS}"
 CHOST="x86_64-pc-linux-gnu"
 # These are the USE flags that were used in addition to what is provided by the
 # profile used for building.
-USE="mmx sse sse2 X gnuplot alsa avahi bash-completion blas cairo bzip2 crypt curl dbus djvu ffmpeg fftw git gnutls graphviz gsl gzip javascript jpeg lapack latex lcms lua mplayer pcre png posix python sqlite svg truetype vim-syntax -cups vaapi systemd -consolekit udisks opengl icu webgl libnotify fontconfig"
+USE="mmx sse sse2 X gnuplot alsa avahi bash-completion blas cairo bzip2 crypt curl dbus djvu ffmpeg fftw git gnutls graphviz gsl gzip javascript jpeg lapack latex lcms lua mplayer pcre png posix python sqlite svg truetype vim-syntax -cups systemd -consolekit udisks icu webgl libnotify fontconfig"
 MAKEOPTS="-j9"
 PORTDIR="/usr/portage"
 DISTDIR="${PORTDIR}/distfiles"
