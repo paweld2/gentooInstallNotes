@@ -114,7 +114,8 @@ emerge -av =sys-kernel/gentoo-sources-4.3.4
 #kernel compilation
 cd /usr/src/linux
 # download prepared configuration
-wget .....
+wget https://github.com/paweld2/gentooInstallNotes/raw/master/kernelConfig
+mv kernelConfig .config
 make clean && make -j8 && make modules_install && make install
 
 mkdir -p /boot/efi/boot
