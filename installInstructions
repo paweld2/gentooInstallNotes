@@ -128,7 +128,7 @@ nano -w /etc/fstab
 /dev/sda2		none		swap		sw		0 0
 
 emerge --ask net-misc/dhcpcd
-
+emerge --ask sys-kernel/linux-firmware
 
 echo GRUB_PLATFORMS="efi-64 pc" >> /etc/portage/make.conf
 emerge --ask --newuse --deep -j9 sys-boot/grub
@@ -162,4 +162,5 @@ mount --make-rslave /mnt/gentoo/dev
 chroot /mnt/gentoo /bin/bash
 source /etc/profile
 export PS1="(chroot) $PS1"
+
 
