@@ -1,0 +1,17 @@
+
+cd /etc/wpa_supplicant/
+# edit configuration
+nano -w wpa_supplicant.conf
+ln -s wpa_supplicant.conf wpa_supplicant-wlp8s0.conf
+
+
+
+
+ln -snf /run/systemd/resolve/resolv.conf /etc/resolv.conf
+systemctl enable systemd-resolved.service
+systemctl enable systemd-networkd.service
+
+
+systemctl enable wpa_supplicant@wlp8s0.service
+systemctl start wpa_supplicant@wlp8s0.service
+
