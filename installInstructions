@@ -125,12 +125,12 @@ nano -w /etc/fstab
 # content:
 /dev/sda2		/boot		vfat		noauto,noatime	0 2
 /dev/sda4		/		ext4		noatime		0 1
-/dev/sda2		none		swap		sw		0 0
+/dev/sda3		none		swap		sw		0 0
 
 emerge --ask net-misc/dhcpcd
 emerge --ask sys-kernel/linux-firmware
 
-echo GRUB_PLATFORMS="efi-64 pc" >> /etc/portage/make.conf
+echo GRUB_PLATFORMS=\"efi-64 pc\" >> /etc/portage/make.conf
 emerge --ask --newuse --deep -j9 sys-boot/grub
 
 
