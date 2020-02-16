@@ -1,22 +1,19 @@
 # bios changes
 
 # partitions
-parted -a optimal /dev/sda
-mklabel gpt
-unit mib
-mkpart primary 1 3
-name 1 grub
-set 1 bios_grub on
-print
+ 
+parted -a optimal --script /dev/sda \
+    mklabel gpt \
+    mkpart primary 1MiB 3MiB \
+    name 1 grub \
+    set 1 bios_grub on \
+    mkpart primary fat32 3MiB 515MiB \
+    name 2 boot \
+    set 2 BOOT on \
+    mkpart primary 515MiB 100% \
+    name 3 lvm \
+    print
 
-mkpart primary fat32 3 515
-name 2 boot
-set 2 BOOT on
-
-mkpart primary 515 -1
-name 3 lvm
-print
-quit
 
 # File systems
 
@@ -32,15 +29,18 @@ cryptsetup luksFormat --type luks1 /dev/sda2
 mkfs.vfat -F32 /dev/mapper/cryptboot
 mkfs.vfat -F32 /dev/sda2
 
+cryptsetup luksFormat -s 512 /dev/sda3
+
 cryptsetup luksFormat -c aes-xts-plain64:sha512 -s 512 /dev/sda3
 tikal: fovodwafOd16
 tulum:  ricPhagyes
+palenque:   olotDobeyp4
 
 cryptsetup luksOpen /dev/sda3 lvm
 lvm pvcreate /dev/mapper/lvm
 vgcreate vg0 /dev/mapper/lvm
 lvcreate -L 30G -n root vg0
-lvcreate -L 180G -n var vg0
+lvcreate -L 40G -n var vg0
 lvcreate -l 100%FREE -n home vg0
 
 mkfs.ext4 /dev/mapper/vg0-root
@@ -57,22 +57,23 @@ mount /dev/mapper/vg0-var /mnt/gentoo/var
 cd /mnt/gentoo
 
 #Download stage
-wget https://mirror.netcologne.de/gentoo/releases/amd64/autobuilds/current-stage3-amd64-hardened-selinux%2Bnomultilib/stage3-amd64-hardened-selinux%2Bnomultilib-20190724T214501Z.tar.xz
-wget https://mirror.netcologne.de/gentoo/releases/amd64/autobuilds/current-stage3-amd64-hardened-selinux%2Bnomultilib/stage3-amd64-hardened-selinux%2Bnomultilib-20190724T214501Z.tar.xz.CONTENTS
-wget https://mirror.netcologne.de/gentoo/releases/amd64/autobuilds/current-stage3-amd64-hardened-selinux%2Bnomultilib/stage3-amd64-hardened-selinux%2Bnomultilib-20190724T214501Z.tar.xz.DIGESTS
-wget https://mirror.netcologne.de/gentoo/releases/amd64/autobuilds/current-stage3-amd64-hardened-selinux%2Bnomultilib/stage3-amd64-hardened-selinux%2Bnomultilib-20190724T214501Z.tar.xz.DIGESTS.asc
+
+wget https://mirror.netcologne.de/gentoo/releases/amd64/autobuilds/current-stage3-amd64-hardened-selinux%2Bnomultilib/stage3-amd64-hardened-selinux%2Bnomultilib-20190821T214502Z.tar.xz
+wget https://mirror.netcologne.de/gentoo/releases/amd64/autobuilds/current-stage3-amd64-hardened-selinux%2Bnomultilib/stage3-amd64-hardened-selinux%2Bnomultilib-20190821T214502Z.tar.xz.CONTENTS
+wget https://mirror.netcologne.de/gentoo/releases/amd64/autobuilds/current-stage3-amd64-hardened-selinux%2Bnomultilib/stage3-amd64-hardened-selinux%2Bnomultilib-20190821T214502Z.tar.xz.DIGESTS
+wget https://mirror.netcologne.de/gentoo/releases/amd64/autobuilds/current-stage3-amd64-hardened-selinux%2Bnomultilib/stage3-amd64-hardened-selinux%2Bnomultilib-20190821T214502Z.tar.xz.DIGESTS.asc
 
 
 
-openssl dgst -r -sha512 stage3-amd64-hardened-selinux+nomultilib-20190724T214501Z.tar.xz
-sha512sum stage3-amd64-hardened-selinux+nomultilib-20190724T214501Z.tar.xz
-cat stage3-amd64-hardened-selinux+nomultilib-20190724T214501Z.tar.xz.DIGESTS
-openssl dgst -r -whirlpool stage3-amd64-hardened-selinux+nomultilib-20190724T214501Z.tar.xz.CONTENTS
+openssl dgst -r -sha512 stage3-amd64-hardened-selinux+nomultilib-20190821T214502Z.tar.xz
+sha512sum stage3-amd64-hardened-selinux+nomultilib-20190821T214502Z.tar.xz
+cat stage3-amd64-hardened-selinux+nomultilib-20190821T214502Z.tar.xz.DIGESTS
+openssl dgst -r -whirlpool stage3-amd64-hardened-selinux+nomultilib-20190821T214502Z.tar.xz.CONTENTS
 
 gpg --recv-keys 0xBB572E0E2D182910
-gpg --verify stage3-amd64-hardened-selinux+nomultilib-20190724T214501Z.tar.xz.DIGESTS.asc
+gpg --verify stage3-amd64-hardened-selinux+nomultilib-20190821T214502Z.tar.xz.DIGESTS.asc
 
-tar xvpf stage3-amd64-hardened-selinux+nomultilib-20190724T214501Z.tar.xz --xattrs --numeric-owner
+tar xvpf stage3-amd64-hardened-selinux+nomultilib-20190821T214502Z.tar.xz --xattrs --numeric-owner
 
 # Setup make.conf
 
@@ -105,10 +106,14 @@ chroot /mnt/gentoo /bin/bash
 source /etc/profile
 export PS1="(chroot) $PS1"
 
-# Basic setup
+#setup date
+date +%Y%m%d -s "20190824"
+
+# Basic setup, do not copy-past to terminal. Special characters are added.
 passwd
 tikal: NivtivIo
 tulum: pay6bnisped
+palenque: ZumhaljAp2
 
 emerge-webrsync
 
@@ -135,14 +140,20 @@ env-update && source /etc/profile
 # Configure fstab
 
 Patition info:
-blkid
+blkid /dev/sda2
+blkid /dev/sda2
+
+lsblk -f -n -o UUID /dev/sda2
+lsblk -f -n -o UUID /dev/mapper/vg0-root
+lsblk -f -n -o UUID /dev/mapper/vg0-var
+lsblk -f -n -o UUID /dev/mapper/vg0-home
 
 
 create fstab with uuid.
-UUID=56BA-556C                                  /boot           vfat            noauto,noatime  1 2
-UUID=caf288cd-63fe-4f8f-bdd9-3594f930d347       /               ext4            defaults        0 1
-UUID=63e13dd3-65ca-495a-8c31-b508d897f988       /var            ext4            defaults        0 1
-UUID=fc1ef2ff-4bea-47a5-aadf-a8c8c3513e17       /home           ext4            defaults        0 1
+UUID=5195-2EB9                                  /boot           vfat            noauto,noatime  1 2
+UUID=b02d7f8c-c9f4-496f-b742-3265b6d2bf7b       /               ext4            defaults        0 1
+UUID=8a8b0897-55bf-4d57-bf7b-9cb69ddec60c       /var            ext4            defaults        0 1
+UUID=70c4b49d-2cef-4a10-b65e-c238e26a914d       /home           ext4            defaults        0 1
 # tmps
 tmpfs                                           /tmp            tmpfs           size=4Gb,defaults,nodev,noexec,nosuid,rootcontext=system_u:object_r:tmp_t        0 0
 tmpfs                                           /run            tmpfs           size=100M,mode=0755,nosuid,nodev,rootcontext=system_u:object_r:var_run_t       0 0
@@ -152,7 +163,7 @@ shm                                             /dev/shm        tmpfs           
 
 
 # Install tools
-emerge -av -j5 pciutils gentoolkit eix cryptsetup grub
+emerge -av -j5 pciutils gentoolkit eix cryptsetup grub vim dracut sys-kernel/gentoo-sources
 
 
 #emerge kernel:
@@ -175,12 +186,13 @@ grub-install /dev/sda
 
 
 #initramfs
-emerge -av dracut
 
-dracut --hostonly /boot/initramfs-4.19.57-gentoo.img 4.19.57-gentoo
+dracut --hostonly /boot/initramfs-4.19.72-gentoo.img 4.19.72-gentoo
+
+rd.luks.uuid=luks-d7799daf-f8a7-411e-9694-2571d028a71f rd.lvm.lv=vg0/root root=/dev/mapper/vg0-root rootfstype=ext4 rootflags=rw,relatime 
 
 dracut --print-cmdline
-rd.luks.uuid=luks-0dc45283-77c6-42ef-8216-479fbb7aba38 rd.lvm.lv=vg0/root root=/dev/mapper/vg0-root rootfstype=ext4 rootflags=rw,relatime,data=ordered
+rd.luks.uuid=luks-092e9301-ac1d-456f-93c3-18b267adbdfa rd.lvm.lv=vg0/root root=/dev/mapper/vg0-root rootfstype=ext4 rootflags=rw,relatime
 
  to disable some: rd.luks=0 rd.lvm=0 rd.md=0 rd.dm=0 rd.luks.crypttab=0
 
@@ -212,10 +224,12 @@ tikal: GovNeytjap3422
 ### to reenter the gentoo system after systemrescue reboot:
 
 cryptsetup luksOpen /dev/sda3 lvm
+olotDobeyp4
+olotDobeyp4
 
 cryptsetup luksOpen /dev/sda2 cryptboot
 
-
+mkdir /mnt/gentoo
 mount /dev/mapper/vg0-root /mnt/gentoo
 mount /dev/mapper/vg0-var /mnt/gentoo/var
 
@@ -225,7 +239,7 @@ mount --rbind /sys /mnt/gentoo/sys
 mount --make-rslave /mnt/gentoo/sys
 mount --rbind /dev /mnt/gentoo/dev
 mount --make-rslave /mnt/gentoo/dev
-l
+
 test -L /dev/shm && rm /dev/shm && mkdir /dev/shm
 mount -t tmpfs -o nosuid,nodev,noexec shm /dev/shm
 chmod 1777 /dev/shm

@@ -1,0 +1,30 @@
+
+uxmal:
+
+
+tulum:
+
+
+
+palenque:
+luks: olotDobeyp4
+root: ZumhaljAp2
+admin: EckiDreeg6
+pawel: UmIrrEev1
+
+
+tikal:
+
+luks: fovodwafOd16
+root: NivtivIo43
+pawel: BLAOxmed$
+ssh-key: Hudombyro04
+
+
+coba:
+
+
+
+
+pueblo:
+RyhycsUlEf484
