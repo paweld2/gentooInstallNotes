@@ -141,8 +141,10 @@ grub2-mkconfig -o /boot/grub/grub.cfg
 
 exit
 cd
+
 umount -l /mnt/gentoo/dev{/shm,/pts,}
 umount /mnt/gentoo{/boot,/sys,/proc,}
+
 reboot
 
 

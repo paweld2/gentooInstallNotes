@@ -25,7 +25,9 @@ cryptsetup open --type plain -d /dev/urandom /dev/sda3 to_be_wiped
 dd if=/dev/zero of=/dev/mapper/to_be_wiped status=progress
 
 #to encrypt boot partition - but no working for now.
+
 cryptsetup luksFormat --type luks1 /dev/sda2
+cryptsetup open /dev/sda2 cryptboot
 mkfs.vfat -F32 /dev/mapper/cryptboot
 mkfs.vfat -F32 /dev/sda2
 
@@ -33,10 +35,13 @@ cryptsetup luksFormat -s 512 /dev/sda3
 
 cryptsetup luksFormat -c aes-xts-plain64:sha512 -s 512 /dev/sda3
 tikal: fovodwafOd16
+palenque: fovodwafOd16
+coba : fovodwafOd16
 tulum:  ricPhagyes
-palenque:   olotDobeyp4
+mateusz: eiipiiMateusz
 
 cryptsetup luksOpen /dev/sda3 lvm
+
 lvm pvcreate /dev/mapper/lvm
 vgcreate vg0 /dev/mapper/lvm
 lvcreate -L 30G -n root vg0
@@ -58,30 +63,27 @@ cd /mnt/gentoo
 
 #Download stage
 
-wget https://mirror.netcologne.de/gentoo/releases/amd64/autobuilds/current-stage3-amd64-hardened-selinux%2Bnomultilib/stage3-amd64-hardened-selinux%2Bnomultilib-20190821T214502Z.tar.xz
-wget https://mirror.netcologne.de/gentoo/releases/amd64/autobuilds/current-stage3-amd64-hardened-selinux%2Bnomultilib/stage3-amd64-hardened-selinux%2Bnomultilib-20190821T214502Z.tar.xz.CONTENTS
-wget https://mirror.netcologne.de/gentoo/releases/amd64/autobuilds/current-stage3-amd64-hardened-selinux%2Bnomultilib/stage3-amd64-hardened-selinux%2Bnomultilib-20190821T214502Z.tar.xz.DIGESTS
-wget https://mirror.netcologne.de/gentoo/releases/amd64/autobuilds/current-stage3-amd64-hardened-selinux%2Bnomultilib/stage3-amd64-hardened-selinux%2Bnomultilib-20190821T214502Z.tar.xz.DIGESTS.asc
+https://gentoo.osuosl.org//releases/amd64/autobuilds/current-stage3-amd64/hardened/stage3-amd64-hardened+nomultilib-20200226T214502Z.tar.xz
 
+wget https://gentoo.osuosl.org//releases/amd64/autobuilds/current-stage3-amd64/hardened/stage3-amd64-hardened+nomultilib-20200226T214502Z.tar.xz
+wget https://gentoo.osuosl.org//releases/amd64/autobuilds/current-stage3-amd64/hardened/stage3-amd64-hardened+nomultilib-20200226T214502Z.tar.xz.CONTENTS
+wget https://gentoo.osuosl.org//releases/amd64/autobuilds/current-stage3-amd64/hardened/stage3-amd64-hardened+nomultilib-20200226T214502Z.tar.xz.DIGESTS
+wget https://gentoo.osuosl.org//releases/amd64/autobuilds/current-stage3-amd64/hardened/stage3-amd64-hardened+nomultilib-20200226T214502Z.tar.xz.DIGESTS.asc
 
-
-openssl dgst -r -sha512 stage3-amd64-hardened-selinux+nomultilib-20190821T214502Z.tar.xz
-sha512sum stage3-amd64-hardened-selinux+nomultilib-20190821T214502Z.tar.xz
-cat stage3-amd64-hardened-selinux+nomultilib-20190821T214502Z.tar.xz.DIGESTS
-openssl dgst -r -whirlpool stage3-amd64-hardened-selinux+nomultilib-20190821T214502Z.tar.xz.CONTENTS
+sha512sum --check stage3-amd64-nomultilib-20200212T214502Z.tar.xz.DIGESTS
+cat stage3-amd64-hardened-selinux+nomultilib-20200226T214502Z.tar.xz.DIGESTS
+openssl dgst -r -whirlpool stage3-amd64-hardened-selinux+nomultilib-20200226T214502Z.tar.xz.CONTENTS
 
 gpg --recv-keys 0xBB572E0E2D182910
-gpg --verify stage3-amd64-hardened-selinux+nomultilib-20190821T214502Z.tar.xz.DIGESTS.asc
+gpg --verify stage3-amd64-nomultilib-20200226T214502Z.tar.xz.DIGESTS.asc
 
-tar xvpf stage3-amd64-hardened-selinux+nomultilib-20190821T214502Z.tar.xz --xattrs --numeric-owner
+tar xvpf stage3-amd64-nomultilib-20200226T214502Z.tar.xz --xattrs --numeric-owner
 
 # Setup make.conf
 
 nano -w /mnt/gentoo/etc/portage/make.conf
 Change content as required, with:
 
-POLICY_TYPES="targeted"
-USE="peer_perms open_perms ubac"
 
 # repo config
 
@@ -97,7 +99,6 @@ mount --rbind /sys /mnt/gentoo/sys
 mount --make-rslave /mnt/gentoo/sys
 mount --rbind /dev /mnt/gentoo/dev
 mount --make-rslave /mnt/gentoo/dev
-
 test -L /dev/shm && rm /dev/shm && mkdir /dev/shm
 mount -t tmpfs -o nosuid,nodev,noexec shm /dev/shm
 chmod 1777 /dev/shm
@@ -112,8 +113,10 @@ date +%Y%m%d -s "20190824"
 # Basic setup, do not copy-past to terminal. Special characters are added.
 passwd
 tikal: NivtivIo
+cobe: NivtivIo
 tulum: pay6bnisped
-palenque: ZumhaljAp2
+palenque: 
+ZumhaljAp2
 
 emerge-webrsync
 
@@ -122,7 +125,6 @@ eselect profile list
 eselect profile set default/linux/amd64/17.1/no-multilib/hardened/selinux
 
 #Continue setup
-echo "Europe/Warsaw" > /etc/timezone
 echo "Europe/Brussels" > /etc/timezone
 emerge --config sys-libs/timezone-data
 
@@ -139,14 +141,16 @@ env-update && source /etc/profile
 
 # Configure fstab
 
-Patition info:
+#Patition info:
 blkid /dev/sda2
 blkid /dev/sda2
 
-lsblk -f -n -o UUID /dev/sda2
-lsblk -f -n -o UUID /dev/mapper/vg0-root
-lsblk -f -n -o UUID /dev/mapper/vg0-var
-lsblk -f -n -o UUID /dev/mapper/vg0-home
+#lsblk -f -n -o UUID /dev/sda2 >> /etc/fstab 
+lsblk -f -n -o UUID /dev/sda2 >> /etc/fstab 
+#lsblk -f -n -o UUID /dev/mapper/cryptboot >> /etc/fstab 
+lsblk -f -n -o UUID /dev/mapper/vg0-root >> /etc/fstab 
+lsblk -f -n -o UUID /dev/mapper/vg0-var >> /etc/fstab 
+lsblk -f -n -o UUID /dev/mapper/vg0-home >> /etc/fstab 
 
 
 create fstab with uuid.
@@ -163,7 +167,7 @@ shm                                             /dev/shm        tmpfs           
 
 
 # Install tools
-emerge -av -j5 pciutils gentoolkit eix cryptsetup grub vim dracut sys-kernel/gentoo-sources
+emerge -av -j5 pciutils gentoolkit eix cryptsetup grub neovim dracut sys-kernel/gentoo-sources net-misc/dhcpcd sys-kernel/linux-firmware
 
 
 #emerge kernel:
@@ -177,28 +181,24 @@ echo "sys-boot/grub:2 device-mapper" >> /etc/portage/package.use/sys-boot
 emerge -av grub
 GRUB_CMDLINE_LINUX="dolvm crypt_root=UUID=6a7a642a-3262-4f87-9540-bcd53969343b root=/dev/mapper/vg0-root root_trim=yes"
 
-#TODO add password to grub
-grub-mkpasswd-pbkdf2
-https://wiki.gentoo.org/wiki/Security_Handbook/Bootloader_security
-
 
 grub-install /dev/sda
 
 
 #initramfs
 
-dracut --hostonly /boot/initramfs-4.19.72-gentoo.img 4.19.72-gentoo
+dracut --force --hostonly /boot/initramfs-4.19.97-gentoo.img 4.19.97-gentoo
+dracut --hostonly /boot/initramfs-5.2.13-gentoo.img 5.2.13-gentoo
 
-rd.luks.uuid=luks-d7799daf-f8a7-411e-9694-2571d028a71f rd.lvm.lv=vg0/root root=/dev/mapper/vg0-root rootfstype=ext4 rootflags=rw,relatime 
 
 dracut --print-cmdline
-rd.luks.uuid=luks-092e9301-ac1d-456f-93c3-18b267adbdfa rd.lvm.lv=vg0/root root=/dev/mapper/vg0-root rootfstype=ext4 rootflags=rw,relatime
 
  to disable some: rd.luks=0 rd.lvm=0 rd.md=0 rd.dm=0 rd.luks.crypttab=0
 
 Then add output to /etc/default/grub in GRUB_CMDLINE_LINUX
 
 grub-mkconfig -o /boot/grub/grub.cfg
+grub-install --target=x86_64-efi --efi-directory=/boot --removable
 
 #install tools
 
@@ -206,7 +206,8 @@ grub-mkconfig -o /boot/grub/grub.cfg
 emerge -av -j3 net-misc/dhcpcd sys-kernel/linux-firmware
 emerge --ask 
 
-
+emerge --ask --noreplace sys-firmware/intel-microcode sys-apps/iucode_tool
+FEATURES="-selinux" emerge -1 selinux-base
 
 exit
 cd
@@ -253,6 +254,7 @@ export PS1="(chroot) $PS1"
 
 hostname: /etc/conf.d/hostname
 emerge -av -j7 sys-process/cronie app-admin/syslog-ng
+
 rc-update add syslog-ng default
 rc-update add cronie default
 rc-update add sshd default
